@@ -5,16 +5,16 @@ import copy
 CURRENT_BEST_ABLATION = 'current_best'
 
 
-ABLATON_SPECS = OrderedDict({
+ABLATION_SPECS = OrderedDict({
     CURRENT_BEST_ABLATION: {
         'description': 'Released U-SamNet configuration with weak residual boundary gating.',
         'tag_suffix': 'weak_boundary_gate',
         'model_overrides': {
-            'rghpa_use_boundary_gate': True,
-            'rghpa_boundary_gate_strength': 0.35,
-            'rghpa_boundary_gate_residual': 0.35,
-            'rghpa_boundary_scale': 0.6,
-            'rghpa_router_residual': 0.1,
+            'cdbha_use_boundary_gate': True,
+            'cdbha_boundary_gate_strength': 0.35,
+            'cdbha_boundary_gate_residual': 0.35,
+            'cdbha_boundary_scale': 0.6,
+            'cdbha_router_residual': 0.1,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
@@ -86,60 +86,60 @@ ABLATON_SPECS = OrderedDict({
         },
         'augmentation_overrides': {},
     },
-    'static_rghpa': {
+    'static_cdbha': {
         'description': 'Replace dynamic CDBHA routing with static four-branch fusion.',
-        'tag_suffix': 'static_rghpa',
+        'tag_suffix': 'static_cdbha',
         'model_overrides': {
-            'rghpa_mode': 'static',
+            'cdbha_mode': 'static',
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
     },
-    'no_rghpa_cab': {
+    'no_cdbha_cab': {
         'description': 'Disable contrast-aware channel calibration in CDBHA.',
-        'tag_suffix': 'no_rghpa_cab',
+        'tag_suffix': 'no_cdbha_cab',
         'model_overrides': {
-            'rghpa_use_cab': False,
+            'cdbha_use_cab': False,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
     },
-    'no_rghpa_boundary_gate': {
+    'no_cdbha_boundary_gate': {
         'description': 'Disable the boundary gate and boundary-context path in CDBHA.',
-        'tag_suffix': 'no_rghpa_boundary_gate',
+        'tag_suffix': 'no_cdbha_boundary_gate',
         'model_overrides': {
-            'rghpa_use_boundary_gate': False,
+            'cdbha_use_boundary_gate': False,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
     },
-    'no_rghpa_dynamic_routing': {
+    'no_cdbha_dynamic_routing': {
         'description': 'Use uniform branch weights while retaining channel calibration and boundary gating.',
-        'tag_suffix': 'no_rghpa_no_router',
+        'tag_suffix': 'no_cdbha_no_router',
         'model_overrides': {
-            'rghpa_use_dynamic_routing': False,
+            'cdbha_use_dynamic_routing': False,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
     },
-    'no_rghpa_boundary_gate_no_cab': {
+    'no_cdbha_boundary_gate_no_cab': {
         'description': 'Disable both channel calibration and boundary gating in CDBHA.',
-        'tag_suffix': 'no_rghpa_boundary_gate_no_cab',
+        'tag_suffix': 'no_cdbha_boundary_gate_no_cab',
         'model_overrides': {
-            'rghpa_use_boundary_gate': False,
-            'rghpa_use_cab': False,
+            'cdbha_use_boundary_gate': False,
+            'cdbha_use_cab': False,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
     },
-    'no_rghpa_boundary_gate_smoothed_routing': {
+    'no_cdbha_boundary_gate_smoothed_routing': {
         'description': 'Disable boundary gating and use smoothed dynamic routing.',
-        'tag_suffix': 'no_rghpa_boundary_gate_smooth_route',
+        'tag_suffix': 'no_cdbha_boundary_gate_smooth_route',
         'model_overrides': {
-            'rghpa_use_boundary_gate': False,
-            'rghpa_router_temperature': 1.8,
-            'rghpa_router_residual': 0.2,
-            'rghpa_boundary_scale': 0.8,
+            'cdbha_use_boundary_gate': False,
+            'cdbha_router_temperature': 1.8,
+            'cdbha_router_residual': 0.2,
+            'cdbha_boundary_scale': 0.8,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
@@ -148,11 +148,11 @@ ABLATON_SPECS = OrderedDict({
         'description': 'Use weak residual boundary gating in CDBHA.',
         'tag_suffix': 'weak_boundary_gate',
         'model_overrides': {
-            'rghpa_use_boundary_gate': True,
-            'rghpa_boundary_gate_strength': 0.35,
-            'rghpa_boundary_gate_residual': 0.35,
-            'rghpa_boundary_scale': 0.6,
-            'rghpa_router_residual': 0.1,
+            'cdbha_use_boundary_gate': True,
+            'cdbha_boundary_gate_strength': 0.35,
+            'cdbha_boundary_gate_residual': 0.35,
+            'cdbha_boundary_scale': 0.6,
+            'cdbha_router_residual': 0.1,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
@@ -161,10 +161,10 @@ ABLATON_SPECS = OrderedDict({
         'description': 'Use lightweight two-way routing without boundary gating.',
         'tag_suffix': 'lite_routing',
         'model_overrides': {
-            'rghpa_use_boundary_gate': False,
-            'rghpa_router_mode': 'lite',
-            'rghpa_router_temperature': 1.25,
-            'rghpa_router_residual': 0.1,
+            'cdbha_use_boundary_gate': False,
+            'cdbha_router_mode': 'lite',
+            'cdbha_router_temperature': 1.25,
+            'cdbha_router_residual': 0.1,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
@@ -173,46 +173,46 @@ ABLATON_SPECS = OrderedDict({
         'description': 'Combine weak boundary gating with lightweight two-way routing.',
         'tag_suffix': 'weak_boundary_gate_lite_routing',
         'model_overrides': {
-            'rghpa_use_boundary_gate': True,
-            'rghpa_router_mode': 'lite',
-            'rghpa_router_temperature': 1.25,
-            'rghpa_router_residual': 0.1,
-            'rghpa_boundary_gate_strength': 0.35,
-            'rghpa_boundary_gate_residual': 0.35,
-            'rghpa_boundary_scale': 0.6,
+            'cdbha_use_boundary_gate': True,
+            'cdbha_router_mode': 'lite',
+            'cdbha_router_temperature': 1.25,
+            'cdbha_router_residual': 0.1,
+            'cdbha_boundary_gate_strength': 0.35,
+            'cdbha_boundary_gate_residual': 0.35,
+            'cdbha_boundary_scale': 0.6,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
     },
-    'rghpa_smoothed_routing': {
+    'cdbha_smoothed_routing': {
         'description': 'Smooth CDBHA routing with temperature scaling and uniform residual mixing.',
-        'tag_suffix': 'rghpa_smooth_route',
+        'tag_suffix': 'cdbha_smooth_route',
         'model_overrides': {
-            'rghpa_router_temperature': 1.5,
-            'rghpa_router_residual': 0.15,
-            'rghpa_boundary_scale': 0.85,
+            'cdbha_router_temperature': 1.5,
+            'cdbha_router_residual': 0.15,
+            'cdbha_boundary_scale': 0.85,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
     },
-    'busi_stable_rghpa': {
+    'busi_stable_cdbha': {
         'description': 'BUSI-oriented static routing configuration with reduced boundary injection.',
-        'tag_suffix': 'busi_stable_rghpa',
+        'tag_suffix': 'busi_stable_cdbha',
         'model_overrides': {
-            'rghpa_mode': 'static',
-            'rghpa_use_dynamic_routing': False,
-            'rghpa_boundary_scale': 0.8,
+            'cdbha_mode': 'static',
+            'cdbha_use_dynamic_routing': False,
+            'cdbha_boundary_scale': 0.8,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
     },
-    'busi_smoothed_rghpa': {
+    'busi_smoothed_cdbha': {
         'description': 'BUSI-oriented dynamic routing with temperature and residual smoothing.',
-        'tag_suffix': 'busi_smoothed_rghpa',
+        'tag_suffix': 'busi_smoothed_cdbha',
         'model_overrides': {
-            'rghpa_router_temperature': 1.8,
-            'rghpa_router_residual': 0.2,
-            'rghpa_boundary_scale': 0.8,
+            'cdbha_router_temperature': 1.8,
+            'cdbha_router_residual': 0.2,
+            'cdbha_boundary_scale': 0.8,
         },
         'loss_overrides': {},
         'augmentation_overrides': {},
@@ -230,9 +230,9 @@ ABLATON_SPECS = OrderedDict({
         'description': 'Combine smoothed routing with discrepancy-aware DRPF confidence.',
         'tag_suffix': 'us_calibrated_full',
         'model_overrides': {
-            'rghpa_router_temperature': 1.5,
-            'rghpa_router_residual': 0.15,
-            'rghpa_boundary_scale': 0.85,
+            'cdbha_router_temperature': 1.5,
+            'cdbha_router_residual': 0.15,
+            'cdbha_boundary_scale': 0.85,
             'drpf_discrepancy_penalty': 0.75,
         },
         'loss_overrides': {},
@@ -296,11 +296,11 @@ ABLATON_SPECS = OrderedDict({
             'use_targeted_augmentation': False,
         },
     },
-    'static_rghpa_no_targeted_aug': {
+    'static_cdbha_no_targeted_aug': {
         'description': 'Use static CDBHA and disable targeted augmentation.',
-        'tag_suffix': 'static_rghpa_no_targeted_aug',
+        'tag_suffix': 'static_cdbha_no_targeted_aug',
         'model_overrides': {
-            'rghpa_mode': 'static',
+            'cdbha_mode': 'static',
         },
         'loss_overrides': {},
         'augmentation_overrides': {
@@ -320,12 +320,12 @@ ABLATON_SPECS = OrderedDict({
             'use_targeted_augmentation': False,
         },
     },
-    'static_rghpa_no_confidence_fusion_no_targeted_aug': {
+    'static_cdbha_no_confidence_fusion_no_targeted_aug': {
         'description': 'Use static CDBHA while disabling DRPF and targeted augmentation.',
-        'tag_suffix': 'static_rghpa_no_conf_fusion_no_targeted_aug',
+        'tag_suffix': 'static_cdbha_no_conf_fusion_no_targeted_aug',
         'model_overrides': {
             'decoder4_3_fusion': 'default',
-            'rghpa_mode': 'static',
+            'cdbha_mode': 'static',
         },
         'loss_overrides': {
             'confidence_weight': 0.0,
@@ -338,10 +338,10 @@ ABLATON_SPECS = OrderedDict({
 
 
 def list_ablation_names():
-    return list(ABLATON_SPECS.keys())
+    return list(ABLATION_SPECS.keys())
 
 
 def get_ablation_spec(name):
-    if name not in ABLATON_SPECS:
-        raise ValueError(f'Unknown ablation: {name}. Available: {", ".join(ABLATON_SPECS.keys())}')
-    return copy.deepcopy(ABLATON_SPECS[name])
+    if name not in ABLATION_SPECS:
+        raise ValueError(f'Unknown ablation: {name}. Available: {", ".join(ABLATION_SPECS.keys())}')
+    return copy.deepcopy(ABLATION_SPECS[name])

@@ -237,31 +237,31 @@ def build_attention_block(
     attention_module,
     dim_in,
     dim_out,
-    rghpa_mode='dynamic',
-    rghpa_use_cab=None,
-    rghpa_use_boundary_gate=None,
-    rghpa_use_dynamic_routing=None,
-    rghpa_router_mode='full',
-    rghpa_router_temperature=1.0,
-    rghpa_router_residual=0.0,
-    rghpa_boundary_scale=1.0,
-    rghpa_boundary_gate_strength=1.0,
-    rghpa_boundary_gate_residual=0.0,
+    cdbha_mode='dynamic',
+    cdbha_use_cab=None,
+    cdbha_use_boundary_gate=None,
+    cdbha_use_dynamic_routing=None,
+    cdbha_router_mode='full',
+    cdbha_router_temperature=1.0,
+    cdbha_router_residual=0.0,
+    cdbha_boundary_scale=1.0,
+    cdbha_boundary_gate_strength=1.0,
+    cdbha_boundary_gate_residual=0.0,
 ):
-    if attention_module == 'rghpa':
-        return ResidualGroupedHadamardAttention(
+    if attention_module == 'cdbha':
+        return ContrastAwareDynamicBoundaryHadamardAttention(
             dim_in,
             dim_out,
-            mode=rghpa_mode,
-            use_cab=rghpa_use_cab,
-            use_boundary_gate=rghpa_use_boundary_gate,
-            use_dynamic_routing=rghpa_use_dynamic_routing,
-            router_mode=rghpa_router_mode,
-            router_temperature=rghpa_router_temperature,
-            router_residual=rghpa_router_residual,
-            boundary_scale=rghpa_boundary_scale,
-            boundary_gate_strength=rghpa_boundary_gate_strength,
-            boundary_gate_residual=rghpa_boundary_gate_residual,
+            mode=cdbha_mode,
+            use_cab=cdbha_use_cab,
+            use_boundary_gate=cdbha_use_boundary_gate,
+            use_dynamic_routing=cdbha_use_dynamic_routing,
+            router_mode=cdbha_router_mode,
+            router_temperature=cdbha_router_temperature,
+            router_residual=cdbha_router_residual,
+            boundary_scale=cdbha_boundary_scale,
+            boundary_gate_strength=cdbha_boundary_gate_strength,
+            boundary_gate_residual=cdbha_boundary_gate_residual,
         )
     if attention_module == 'se':
         return ResidualSEAttention(dim_in, dim_out)
@@ -272,7 +272,7 @@ def build_attention_block(
     raise ValueError(f'Unsupported attention module: {attention_module}')
 
 
-class ResidualGroupedHadamardAttention(nn.Module):
+class ContrastAwareDynamicBoundaryHadamardAttention(nn.Module):
     supports_debug = True
 
     def __init__(
@@ -297,9 +297,9 @@ class ResidualGroupedHadamardAttention(nn.Module):
         if dim_in % 4 != 0:
             raise ValueError(f'dim_in must be divisible by 4, got {dim_in}')
         if mode not in {'dynamic', 'static'}:
-            raise ValueError(f'Unsupported RGHPA mode: {mode}')
+            raise ValueError(f'Unsupported CDBHA mode: {mode}')
         if router_mode not in {'full', 'lite'}:
-            raise ValueError(f'Unsupported RGHPA router mode: {router_mode}')
+            raise ValueError(f'Unsupported CDBHA router mode: {router_mode}')
 
         c_dim_in = dim_in // 4
         kernel_size = 3
@@ -649,17 +649,17 @@ class DecoderStage(nn.Module):
         prior_channels,
         use_attention=True,
         fusion_type='default',
-        rghpa_mode='dynamic',
-        attention_module='rghpa',
-        rghpa_use_cab=None,
-        rghpa_use_boundary_gate=None,
-        rghpa_use_dynamic_routing=None,
-        rghpa_router_mode='full',
-        rghpa_router_temperature=1.0,
-        rghpa_router_residual=0.0,
-        rghpa_boundary_scale=1.0,
-        rghpa_boundary_gate_strength=1.0,
-        rghpa_boundary_gate_residual=0.0,
+        cdbha_mode='dynamic',
+        attention_module='cdbha',
+        cdbha_use_cab=None,
+        cdbha_use_boundary_gate=None,
+        cdbha_use_dynamic_routing=None,
+        cdbha_router_mode='full',
+        cdbha_router_temperature=1.0,
+        cdbha_router_residual=0.0,
+        cdbha_boundary_scale=1.0,
+        cdbha_boundary_gate_strength=1.0,
+        cdbha_boundary_gate_residual=0.0,
         drpf_discrepancy_penalty=0.0,
     ):
         super().__init__()
@@ -683,16 +683,16 @@ class DecoderStage(nn.Module):
             attention_module,
             merge_channels,
             out_channels,
-            rghpa_mode=rghpa_mode,
-            rghpa_use_cab=rghpa_use_cab,
-            rghpa_use_boundary_gate=rghpa_use_boundary_gate,
-            rghpa_use_dynamic_routing=rghpa_use_dynamic_routing,
-            rghpa_router_mode=rghpa_router_mode,
-            rghpa_router_temperature=rghpa_router_temperature,
-            rghpa_router_residual=rghpa_router_residual,
-            rghpa_boundary_scale=rghpa_boundary_scale,
-            rghpa_boundary_gate_strength=rghpa_boundary_gate_strength,
-            rghpa_boundary_gate_residual=rghpa_boundary_gate_residual,
+            cdbha_mode=cdbha_mode,
+            cdbha_use_cab=cdbha_use_cab,
+            cdbha_use_boundary_gate=cdbha_use_boundary_gate,
+            cdbha_use_dynamic_routing=cdbha_use_dynamic_routing,
+            cdbha_router_mode=cdbha_router_mode,
+            cdbha_router_temperature=cdbha_router_temperature,
+            cdbha_router_residual=cdbha_router_residual,
+            cdbha_boundary_scale=cdbha_boundary_scale,
+            cdbha_boundary_gate_strength=cdbha_boundary_gate_strength,
+            cdbha_boundary_gate_residual=cdbha_boundary_gate_residual,
         ) if use_attention else ConvBlock(merge_channels, out_channels)
 
     def forward(self, x, skip, prior, return_debug=False, return_aux=False):
@@ -781,17 +781,17 @@ class USamNet(nn.Module):
         sam_checkpoint=None,
         sam_freeze=True,
         decoder4_3_fusion='drpf',
-        rghpa_mode='dynamic',
-        attention_module='rghpa',
-        rghpa_use_cab=None,
-        rghpa_use_boundary_gate=None,
-        rghpa_use_dynamic_routing=None,
-        rghpa_router_mode='full',
-        rghpa_router_temperature=1.0,
-        rghpa_router_residual=0.0,
-        rghpa_boundary_scale=1.0,
-        rghpa_boundary_gate_strength=1.0,
-        rghpa_boundary_gate_residual=0.0,
+        cdbha_mode='dynamic',
+        attention_module='cdbha',
+        cdbha_use_cab=None,
+        cdbha_use_boundary_gate=None,
+        cdbha_use_dynamic_routing=None,
+        cdbha_router_mode='full',
+        cdbha_router_temperature=1.0,
+        cdbha_router_residual=0.0,
+        cdbha_boundary_scale=1.0,
+        cdbha_boundary_gate_strength=1.0,
+        cdbha_boundary_gate_residual=0.0,
         drpf_discrepancy_penalty=0.0,
         enable_boundary_head=True,
         enable_uncertainty_heads=True,
@@ -831,46 +831,46 @@ class USamNet(nn.Module):
             attention_module,
             c_list[2],
             c_list[3],
-            rghpa_mode=rghpa_mode,
-            rghpa_use_cab=rghpa_use_cab,
-            rghpa_use_boundary_gate=rghpa_use_boundary_gate,
-            rghpa_use_dynamic_routing=rghpa_use_dynamic_routing,
-            rghpa_router_mode=rghpa_router_mode,
-            rghpa_router_temperature=rghpa_router_temperature,
-            rghpa_router_residual=rghpa_router_residual,
-            rghpa_boundary_scale=rghpa_boundary_scale,
-            rghpa_boundary_gate_strength=rghpa_boundary_gate_strength,
-            rghpa_boundary_gate_residual=rghpa_boundary_gate_residual,
+            cdbha_mode=cdbha_mode,
+            cdbha_use_cab=cdbha_use_cab,
+            cdbha_use_boundary_gate=cdbha_use_boundary_gate,
+            cdbha_use_dynamic_routing=cdbha_use_dynamic_routing,
+            cdbha_router_mode=cdbha_router_mode,
+            cdbha_router_temperature=cdbha_router_temperature,
+            cdbha_router_residual=cdbha_router_residual,
+            cdbha_boundary_scale=cdbha_boundary_scale,
+            cdbha_boundary_gate_strength=cdbha_boundary_gate_strength,
+            cdbha_boundary_gate_residual=cdbha_boundary_gate_residual,
         )
         self.encoder5 = build_attention_block(
             attention_module,
             c_list[3],
             c_list[4],
-            rghpa_mode=rghpa_mode,
-            rghpa_use_cab=rghpa_use_cab,
-            rghpa_use_boundary_gate=rghpa_use_boundary_gate,
-            rghpa_use_dynamic_routing=rghpa_use_dynamic_routing,
-            rghpa_router_mode=rghpa_router_mode,
-            rghpa_router_temperature=rghpa_router_temperature,
-            rghpa_router_residual=rghpa_router_residual,
-            rghpa_boundary_scale=rghpa_boundary_scale,
-            rghpa_boundary_gate_strength=rghpa_boundary_gate_strength,
-            rghpa_boundary_gate_residual=rghpa_boundary_gate_residual,
+            cdbha_mode=cdbha_mode,
+            cdbha_use_cab=cdbha_use_cab,
+            cdbha_use_boundary_gate=cdbha_use_boundary_gate,
+            cdbha_use_dynamic_routing=cdbha_use_dynamic_routing,
+            cdbha_router_mode=cdbha_router_mode,
+            cdbha_router_temperature=cdbha_router_temperature,
+            cdbha_router_residual=cdbha_router_residual,
+            cdbha_boundary_scale=cdbha_boundary_scale,
+            cdbha_boundary_gate_strength=cdbha_boundary_gate_strength,
+            cdbha_boundary_gate_residual=cdbha_boundary_gate_residual,
         )
         self.encoder6 = build_attention_block(
             attention_module,
             c_list[4],
             c_list[5],
-            rghpa_mode=rghpa_mode,
-            rghpa_use_cab=rghpa_use_cab,
-            rghpa_use_boundary_gate=rghpa_use_boundary_gate,
-            rghpa_use_dynamic_routing=rghpa_use_dynamic_routing,
-            rghpa_router_mode=rghpa_router_mode,
-            rghpa_router_temperature=rghpa_router_temperature,
-            rghpa_router_residual=rghpa_router_residual,
-            rghpa_boundary_scale=rghpa_boundary_scale,
-            rghpa_boundary_gate_strength=rghpa_boundary_gate_strength,
-            rghpa_boundary_gate_residual=rghpa_boundary_gate_residual,
+            cdbha_mode=cdbha_mode,
+            cdbha_use_cab=cdbha_use_cab,
+            cdbha_use_boundary_gate=cdbha_use_boundary_gate,
+            cdbha_use_dynamic_routing=cdbha_use_dynamic_routing,
+            cdbha_router_mode=cdbha_router_mode,
+            cdbha_router_temperature=cdbha_router_temperature,
+            cdbha_router_residual=cdbha_router_residual,
+            cdbha_boundary_scale=cdbha_boundary_scale,
+            cdbha_boundary_gate_strength=cdbha_boundary_gate_strength,
+            cdbha_boundary_gate_residual=cdbha_boundary_gate_residual,
         )
 
         self.sam_encoder = ImageEncoderViT(
@@ -905,9 +905,9 @@ class USamNet(nn.Module):
             'p1': nn.Sequential(nn.Conv2d(c_list[5], c_list[0], kernel_size=1, bias=False), nn.GroupNorm(_group_count(c_list[0]), c_list[0]), nn.GELU()),
         })
 
-        self.decoder5 = DecoderStage(c_list[5], c_list[4], c_list[4], c_list[4], use_attention=True, fusion_type='default', rghpa_mode=rghpa_mode, attention_module=attention_module, rghpa_use_cab=rghpa_use_cab, rghpa_use_boundary_gate=rghpa_use_boundary_gate, rghpa_use_dynamic_routing=rghpa_use_dynamic_routing, rghpa_router_mode=rghpa_router_mode, rghpa_router_temperature=rghpa_router_temperature, rghpa_router_residual=rghpa_router_residual, rghpa_boundary_scale=rghpa_boundary_scale, rghpa_boundary_gate_strength=rghpa_boundary_gate_strength, rghpa_boundary_gate_residual=rghpa_boundary_gate_residual)
-        self.decoder4 = DecoderStage(c_list[4], c_list[3], c_list[3], c_list[3], use_attention=True, fusion_type=decoder4_3_fusion, rghpa_mode=rghpa_mode, attention_module=attention_module, rghpa_use_cab=rghpa_use_cab, rghpa_use_boundary_gate=rghpa_use_boundary_gate, rghpa_use_dynamic_routing=rghpa_use_dynamic_routing, rghpa_router_mode=rghpa_router_mode, rghpa_router_temperature=rghpa_router_temperature, rghpa_router_residual=rghpa_router_residual, rghpa_boundary_scale=rghpa_boundary_scale, rghpa_boundary_gate_strength=rghpa_boundary_gate_strength, rghpa_boundary_gate_residual=rghpa_boundary_gate_residual, drpf_discrepancy_penalty=drpf_discrepancy_penalty)
-        self.decoder3 = DecoderStage(c_list[3], c_list[2], c_list[2], c_list[2], use_attention=True, fusion_type=decoder4_3_fusion, rghpa_mode=rghpa_mode, attention_module=attention_module, rghpa_use_cab=rghpa_use_cab, rghpa_use_boundary_gate=rghpa_use_boundary_gate, rghpa_use_dynamic_routing=rghpa_use_dynamic_routing, rghpa_router_mode=rghpa_router_mode, rghpa_router_temperature=rghpa_router_temperature, rghpa_router_residual=rghpa_router_residual, rghpa_boundary_scale=rghpa_boundary_scale, rghpa_boundary_gate_strength=rghpa_boundary_gate_strength, rghpa_boundary_gate_residual=rghpa_boundary_gate_residual, drpf_discrepancy_penalty=drpf_discrepancy_penalty)
+        self.decoder5 = DecoderStage(c_list[5], c_list[4], c_list[4], c_list[4], use_attention=True, fusion_type='default', cdbha_mode=cdbha_mode, attention_module=attention_module, cdbha_use_cab=cdbha_use_cab, cdbha_use_boundary_gate=cdbha_use_boundary_gate, cdbha_use_dynamic_routing=cdbha_use_dynamic_routing, cdbha_router_mode=cdbha_router_mode, cdbha_router_temperature=cdbha_router_temperature, cdbha_router_residual=cdbha_router_residual, cdbha_boundary_scale=cdbha_boundary_scale, cdbha_boundary_gate_strength=cdbha_boundary_gate_strength, cdbha_boundary_gate_residual=cdbha_boundary_gate_residual)
+        self.decoder4 = DecoderStage(c_list[4], c_list[3], c_list[3], c_list[3], use_attention=True, fusion_type=decoder4_3_fusion, cdbha_mode=cdbha_mode, attention_module=attention_module, cdbha_use_cab=cdbha_use_cab, cdbha_use_boundary_gate=cdbha_use_boundary_gate, cdbha_use_dynamic_routing=cdbha_use_dynamic_routing, cdbha_router_mode=cdbha_router_mode, cdbha_router_temperature=cdbha_router_temperature, cdbha_router_residual=cdbha_router_residual, cdbha_boundary_scale=cdbha_boundary_scale, cdbha_boundary_gate_strength=cdbha_boundary_gate_strength, cdbha_boundary_gate_residual=cdbha_boundary_gate_residual, drpf_discrepancy_penalty=drpf_discrepancy_penalty)
+        self.decoder3 = DecoderStage(c_list[3], c_list[2], c_list[2], c_list[2], use_attention=True, fusion_type=decoder4_3_fusion, cdbha_mode=cdbha_mode, attention_module=attention_module, cdbha_use_cab=cdbha_use_cab, cdbha_use_boundary_gate=cdbha_use_boundary_gate, cdbha_use_dynamic_routing=cdbha_use_dynamic_routing, cdbha_router_mode=cdbha_router_mode, cdbha_router_temperature=cdbha_router_temperature, cdbha_router_residual=cdbha_router_residual, cdbha_boundary_scale=cdbha_boundary_scale, cdbha_boundary_gate_strength=cdbha_boundary_gate_strength, cdbha_boundary_gate_residual=cdbha_boundary_gate_residual, drpf_discrepancy_penalty=drpf_discrepancy_penalty)
         self.decoder2 = DecoderStage(c_list[2], c_list[1], c_list[1], c_list[1], use_attention=False)
         self.decoder1 = DecoderStage(c_list[1], c_list[0], c_list[0], c_list[0], use_attention=False)
 

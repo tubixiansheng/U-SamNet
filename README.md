@@ -141,7 +141,7 @@ python train.py \
   --ablation no_sam_adapter
 ```
 
-Other examples include `no_confidence_fusion`, `no_boundary_branch`, `no_uncertainty_supervision`, `no_deep_supervision`, `no_mask_branch_supervision`, `static_rghpa`, `no_rghpa_cab`, `no_rghpa_boundary_gate`, `no_rghpa_dynamic_routing`, `se_attention`, `cbam_attention`, `axial_attention`, and `residual_shared_sam_aux`.
+Other examples include `no_confidence_fusion`, `no_boundary_branch`, `no_uncertainty_supervision`, `no_deep_supervision`, `no_mask_branch_supervision`, `static_cdbha`, `no_cdbha_cab`, `no_cdbha_boundary_gate`, `no_cdbha_dynamic_routing`, `se_attention`, `cbam_attention`, `axial_attention`, and `residual_shared_sam_aux`.
 
 ## Reproducibility notes
 
