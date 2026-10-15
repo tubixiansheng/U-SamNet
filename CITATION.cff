@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the U-SamNet manuscript."
+title: "U-SamNet: A Multi-Scale Segmentation Approach for Breast Tumor Ultrasound Images"
+type: software
+authors:
+  - family-names: Lai
+    given-names: Zhihui
+  - family-names: Wu
+    given-names: Qiwei
+  - family-names: Kong
+    given-names: Heng
+  - family-names: Shen
+    given-names: Linlin
+repository-code: "https://github.com/tubixiansheng/U-SamNet"
+license: Apache-2.0
+date-released: 2026-10-16

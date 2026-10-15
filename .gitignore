@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local configuration and secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Datasets, checkpoints, and generated artifacts
+data/*
+!data/.gitkeep
+results/
+outputs/
+checkpoints/
+runs/
+logs/
+wandb/
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.npy
+*.npz
+*.pkl
+*.pickle
+
+# Archives and document builds
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
